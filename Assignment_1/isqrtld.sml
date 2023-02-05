@@ -76,7 +76,6 @@ fun processlist(xs: int list) =
 fun doubleList(xs : int list) = multBy(xs, 2, 0)
 fun calcroot(imdiv : int list, furdiv : int list list, root: int list) = 
 	let
-	
 	val p = findDigit(doubleList(root), 9, trimzero(imdiv))
 	val ls_im=trimzero(rev(subtractLists(rev(imdiv), rev(#2 p), 0)))
 	in
@@ -84,11 +83,14 @@ fun calcroot(imdiv : int list, furdiv : int list list, root: int list) =
 	calcroot(joinLists(ls_im,  hd(furdiv)), tl furdiv, (#1 p)::root)
 	end
 fun isqrtld(s : string) = 
-	let val k=  processlist(numList(charList(s))) (*add exception for empty string*)
+	let val k=  processlist(trimzero(numList(charList(s)))) (*add exception for empty string*)
+	in 
+	if(null(k))
+	then ("0","0")
+	else 
+	let 
 	val anspr = calcroot(hd k,tl k, [])
 	in if null(#2 anspr) then ((numtoString((#1 anspr), [])), numtoString([0], [])) else
 	(numtoString((#1 anspr), []), numtoString(rev(#2 anspr),[]))
 	end
-	
-		
-	
+	end
