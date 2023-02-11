@@ -1,0 +1,26 @@
+Some errors and how I dealt with them
+## Bold, Italics, Underline:
+Here, I just considered pairwise nesting starting from the left, that is all the words between asterik 1 and asterik 2 would be italicised,
+and those between asterik 3 and asterik 4 would be too, and so on
+Moreover, I assumed that the different symbols would be space separated, for eg, if I have to make the text underlined and bold then
+** _text_ ** would be the way, and for bold and italicised ** *bgbeg* ** would be the way.
+
+## Headings and Codeblocks
+If there are greater than 12 spaces or 3 tabs, then I implemented codeblocks. Escaping the < and > was also done for http URLs 
+and can easily be extended to others. Headings need not have a space between the hashes and the text, and may not be nested within any other element.
+As a result, headings are the terminating signals for precceding elements.
+
+##Blockquotes and Lists
+Both nested Blockquotes and Lists have been implemented. i assumed that the newlines between the list items are delimiters
+and not actual new lines. Moreover, I assumed that these blockquotes all start from the beginning of the line. 
+
+##Links
+I assumed that they would be given in the format of [text][alias], with the document having some sort of link specification for said alias
+, so the link appears as **text**, and on clicking it we reach the link pointed to by the alias.
+
+#Paragraphs
+They have been implemented with the assumption that a single newline character in a line would cause the start and end
+of these paragraphs. These too are terminal non nestable elements (unless within blockquotes)
+
+##Horizontal Rule
+Any sequence of hyphens with size>=3 and no other characters but hyphens generates a horizontal rule

@@ -1,6 +1,6 @@
 
 <center>
-#Department of Computer Science and Engineering
+# Department of Computer Science and Engineering
 
 ## Programming Languages
 
@@ -13,8 +13,7 @@
 
 ###### Introduction
 
-HTML is often too verbose and complicated for most static pages like this
-one. Most writers of web-pages require only the simplest HTML mark-ups
+writers of web-pages require only the simplest HTML mark-ups
 with the fewest possible options and even fewer special symbols. For
 such simple web-pages it suffices to use a few simple symbols to
 format the text written in a text editor (such as *gedit*, *Emacs* or even
