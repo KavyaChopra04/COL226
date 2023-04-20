@@ -1,0 +1,32 @@
+rational a,b,c;
+integer x,y,z;
+boolean p,q,r;
+procedure tart
+  integer x,y;
+    boolean p,q;
+    {
+        if p && q .-. s > 0
+        then
+        {
+            p := p -1;
+            z := z + 2;
+        }
+        else
+        {
+            while p > 0
+            do
+            {
+                p := p - 1;
+                z := z + 2;
+            }
+            od;
+            p := p + 1;
+            r := r + 3;
+        }
+        fi;
+        p := x && 1;
+    };
+{
+   a := b .+. c;
+   call tart;
+}

@@ -1,0 +1,2 @@
+Skeleton 5
+d2f4d"Char"ä¢TextIO"ä¢ExpOp"ä¢BigInt"ad"MyLex"h3aä¢yyInput"jh3aä¢TIO"gp1ÿad"TSIO"gp2ÿ?d"StreamIO"ad"TPIO"gp1d"TextPrimIO"è0aä¢UserDeclarations"ÿ:bbd2egp1ÿ=f7d"IO"d"List"Cÿ=d"Vector"ÿÿ1ÿNf0f1ÿ1

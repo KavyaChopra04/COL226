@@ -1,0 +1,6 @@
+Library
+  structure MyLex
+is
+  rational.sml (* Lot of datatypes *)
+  sample.lex (* Lexer rules. *)
+  $/basis.cm

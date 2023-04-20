@@ -1,0 +1,20 @@
+rational a,b,c;
+procedure tart
+  integer x,y;
+    boolean p,q;
+    {
+        if p > q 
+        then
+        {
+            x := y;
+        }
+        else
+        {
+            x := y + 1;
+        }
+        fi;
+        p := x && 1;
+    }
+{
+   a := b .+. c;
+}
