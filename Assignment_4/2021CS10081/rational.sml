@@ -181,12 +181,16 @@ structure BigInt : BIGINT =
             if s1 = s2 then 
                 (trimzero(#1 (divideHelper([], l2, l1))), 1) 
             else 
-                (trimzero(#1 (divideHelper([], l2, l1))), ~1)
+                if(s1 = ~1) then
+                    (trimzero(#1 (divideHelper([], l2, l1))), ~1)
+                else
+                    addBigint(((trimzero(#1 (divideHelper([], l2, l1)))), ~1), ([1], ~1))
+                    
         fun moduloBigint((l1,s1), (l2,s2)) = 
             if s1 = s2 then 
                 (trimzero(rev(#2 (divideHelper([], l2, l1)))), 1) 
             else 
-                (trimzero(rev(#2 (divideHelper([], l2, l1)))), ~1)
+                subtractBigint((l1,s1), multiplyBigint(divideBigint((l1,s1), (l2,s2)), (l2,s2)))
         fun power10Bigint(x, list) = 
             if(x < 0) then raise NegativePower
             else 

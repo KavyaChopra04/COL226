@@ -22,7 +22,7 @@ sig
     val evaluateEXP: DataTypes.EXP * int-> DataTypes.EXP * DataTypes.TYPE
 
     val runProgram: DataTypes.BLOCK -> unit
-    val init: unit -> unit
+    val interpret: string *string  -> unit
 end =
     struct
     exception CalcError;
@@ -32,12 +32,25 @@ end =
     exception InvalidBooleanExpressioninWhile;
     exception TypeMismatch;
     exception UndeclaredProcedure;
+    val inputFile:string ref = ref "input.rat";
+    val outputFile:string ref= ref "output.rat";
     val callframe_id: int ref = ref 0;
     datatype CALLFRAME = CALLFRAME of int * int * (string, DataTypes.EXP) HashTable.hash_table * (string, DataTypes.BLOCK) HashTable.hash_table;
     val callstack: CALLFRAME list ref = ref [];
     val parentTable: (string, int) HashTable.hash_table = HashTable.mkTable (HashString.hashString, op=) (42, Fail "not found")
     val globalScopedSymbolTable: (string, (string, DataTypes.TYPE) HashTable.hash_table) HashTable.hash_table = HashTable.mkTable (HashString.hashString, op=) (42, Fail "not found")
-
+    fun initFile()=
+        let val fd = TextIO.openOut (!outputFile)
+            val _ = TextIO.closeOut fd
+        in () end
+    fun writeFile content =
+        let val fd = TextIO.openAppend (!outputFile)
+            val _ = TextIO.output (fd, content) handle e => (TextIO.closeOut fd; raise e)
+        in () end
+    fun closeFile () =
+        let val fd = TextIO.openAppend (!outputFile)
+            val _ = TextIO.closeOut fd
+        in () end
     fun setZero(DataTypes.INT) = DataTypes.INTEGER_VALUE(BigInt.repZero)
         | setZero(DataTypes.RATIONAL) = DataTypes.RATIONAL_VALUE(valOf(ExpOp.rat(BigInt.repZero)))
         | setZero(DataTypes.BOOL) = DataTypes.FALSE
@@ -125,21 +138,21 @@ end =
             in
                 if(isSome(HashTable.find currentFrame var)=false andalso scope_index=scopeindex) then
                     if(parentScope <> NONE) then
-                        (print("searching for variable" ^ var ^ " in parentscope "^Int.toString(valOf(parentScope))^"\n");
-                        lookup(var, tl(callstack), valOf(parentScope)))
+                        (* (print("searching for variable" ^ var ^ " in parentscope "^Int.toString(valOf(parentScope))^"\n"); *)
+                        (lookup(var, tl(callstack), valOf(parentScope)))
                     else
                         raise UndeclaredBinding
                 else 
                     if (isSome(HashTable.find currentFrame var)=false  andalso scope_index<>scopeindex) then
-                        (print("searching procedure "^var^"further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n");  
-                        lookup(var, tl(callstack), scopeindex))
+                        (* (print("searching procedure "^var^"further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n");   *)
+                        (lookup(var, tl(callstack), scopeindex))
                     else 
                         if(isSome(HashTable.find currentFrame var) andalso scope_index = scopeindex) then
-                            (print("found value "^var^ "in current scope "^Int.toString(scopeindex)^"\n");
-                            valOf(HashTable.find currentFrame var))     
+                            (* (print("found value "^var^ "in current scope "^Int.toString(scopeindex)^"\n"); *)
+                            (valOf(HashTable.find currentFrame var))     
                         else    
-                            (print("searching for variable" ^ var ^" further down, the current callframe has scope "^(Int.toString(scope_index))^"\n");
-                            lookup(var, tl(callstack), scopeindex))            
+                            (* (print("searching for variable" ^ var ^" further down, the current callframe has scope "^(Int.toString(scope_index))^"\n"); *)
+                            (lookup(var, tl(callstack), scopeindex))            
 
             end    
     fun proclookup(var: string, callstack, scopeindex) = 
@@ -152,21 +165,21 @@ end =
             in
                 if(isSome(HashTable.find proctable var)=false andalso scope_index=scopeindex) then
                     if(parentScope <> NONE) then
-                        (print("searching for procedure "^var^"in parentscope "^Int.toString(valOf(parentScope))^"\n");
-                        proclookup(var, tl(callstack), valOf(parentScope)))
+                        (* (print("searching for procedure "^var^"in parentscope "^Int.toString(valOf(parentScope))^"\n"); *)
+                        (proclookup(var, tl(callstack), valOf(parentScope)))
                     else
                         raise UndeclaredProcedure
                 else 
                     if (isSome(HashTable.find proctable var)=false andalso scope_index<>scopeindex) then
-                        (print("searching procedure "^var^"further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n");                        
-                        proclookup(var, tl(callstack), scopeindex))
+                        (* (print("searching procedure "^var^"further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n");                         *)
+                        (proclookup(var, tl(callstack), scopeindex))
                     else 
                         if(isSome(HashTable.find proctable var) andalso scope_index = scopeindex) then
-                            (print("found procedure"^var^"in current scope "^Int.toString(scopeindex)^"\n");
-                            valOf(HashTable.find proctable var))     
+                            (* (print("found procedure"^var^"in current scope "^Int.toString(scopeindex)^"\n"); *)
+                            (valOf(HashTable.find proctable var))     
                         else    
-                            (print("searching for procedure" ^var^"further down, the current callframe has scope "^(Int.toString(scope_index))^"\n");
-                            proclookup(var, tl(callstack), scopeindex))    
+                            (* (print("searching for procedure" ^var^"further down, the current callframe has scope "^(Int.toString(scope_index))^"\n"); *)
+                            (proclookup(var, tl(callstack), scopeindex))    
             end
     fun evaluateEXP(exp: DataTypes.EXP, scopeindex) =
         let
@@ -633,7 +646,7 @@ end =
         in
             (List.app (fn (i, varval) => (HashTable.insert hashFrame (i, varval))) frame;
             List.app (fn DataTypes.PROCDEF(i, procdef) => (HashTable.insert hashProc (i, procdef))) procdeflist;
-            print("adding frame with scopeid "^Int.toString(scopeindex)^" to the callstack \n");
+            (* print("adding frame with scopeid "^Int.toString(scopeindex)^" to the callstack \n"); *)
             callstack := CALLFRAME(!callframe_id + 1,scopeindex,hashFrame,hashProc):: !callstack;
             callframe_id := !callframe_id + 1)
         end
@@ -649,22 +662,22 @@ end =
             in
                 if(HashTable.find currentFrame var = NONE andalso scope_index=scopeindex) then
                     if(parentScope <> NONE) then
-                        (print("in set: searching in parentscope "^Int.toString(valOf(parentScope))^"\n");
-                        set(var, tl(callstack),valOf(parentScope), value))
+                        (* (print("in set: searching in parentscope "^Int.toString(valOf(parentScope))^"\n"); *)
+                        (set(var, tl(callstack),valOf(parentScope), value))
                     else
                         raise UndeclaredBinding
 
                 else 
                     if (HashTable.find currentFrame var = NONE andalso scope_index<>scopeindex) then
-                        (print("in set: searching further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n");
-                        set(var, tl(callstack), scopeindex, value))
+                        (* (print("in set: searching further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n"); *)
+                        (set(var, tl(callstack), scopeindex, value))
                     else
                         if(isSome(HashTable.find currentFrame var) andalso scope_index = scopeindex) then
-                            (print("in set: found value "^var^ " in current scope "^Int.toString(scopeindex)^"\n");
-                            HashTable.insert currentFrame (var,value))     
+                            (* (print("in set: found value "^var^ " in current scope "^Int.toString(scopeindex)^"\n"); *)
+                            (HashTable.insert currentFrame (var,value))     
                         else    
-                            (print("in set: searching further down, the current callframe has scope "^(Int.toString(scope_index))^"\n");
-                            set(var, tl(callstack), scopeindex, value))    
+                            (* (print("in set: searching further down, the current callframe has scope "^(Int.toString(scope_index))^"\n"); *)
+                            (set(var, tl(callstack), scopeindex, value))    
             end
 
     fun runProcedure(blk : DataTypes.BLOCK) = 
@@ -674,7 +687,7 @@ end =
         in
             (pushFrame(scopetable, !scopeindex, procdeflist);
             List.app (fn (cmd) => runCommand(cmd, !scopeindex)) cmdlist;
-            print("popping stack with scopeid"^Int.toString(!scopeindex)^"\n");
+            (* print("popping stack with scopeid"^Int.toString(!scopeindex)^"\n"); *)
             callstack := tl(!callstack);
             callframe_id := !callframe_id - 1)
         end
@@ -707,11 +720,11 @@ end =
                                         val x = #1 q;
                                     in  
                                         case x of
-                                            DataTypes.TRUE => print("tt"^"\n")
-                                        |   DataTypes.FALSE => print("ff"^"\n")
-                                        |   DataTypes.INTEGER_VALUE(i) => print(BigInt.showBigint(i)^"\n")
-                                        |   DataTypes.RATIONAL_VALUE(i) => print(ExpOp.showRat(i)^"\n")
-                                        |   DataTypes.STRING_VALUE(i) => print(i^"\n")
+                                            DataTypes.TRUE => writeFile("tt"^"\n")
+                                        |   DataTypes.FALSE => writeFile("ff"^"\n")
+                                        |   DataTypes.INTEGER_VALUE(i) => writeFile(BigInt.showBigint(i)^"\n")
+                                        |   DataTypes.RATIONAL_VALUE(i) => writeFile(ExpOp.showRat(i)^"\n")
+                                        |   DataTypes.STRING_VALUE(i) => writeFile(i^"\n")
                                     end
 
         |   DataTypes.WHILE(exp,commandlist)=> while 
@@ -734,10 +747,10 @@ end =
         |   DataTypes.Call(procname) => let 
                                             val x = proclookup(procname, !callstack, scopeindex)
                                         in
-                                            (print("calling procedure: "^procname^"\n");
-                                            runProcedure(x))
+                                            (* (print("calling procedure: "^procname^"\n"); *)
+                                            runProcedure(x)
                                         end
-        |   DataTypes.Read(s) =>                              (print("Please enter the value of "^s^": \n");
+        |   DataTypes.Read(s) =>  (print("Please enter the value of variable "^s^" : \n"); 
 
                             let 
                             val str =   valOf (TextIO.inputLine TextIO.stdIn);
@@ -765,5 +778,14 @@ end =
     
     
     
-    fun init() = (HashTable.clear parentTable; callframe_id = ref 0; HashTable.clear globalScopedSymbolTable; callstack = ref[]; runProgram(retBlock "prog.txt"))
+    fun interpret(input, output) = (
+                                   inputFile := input;
+                                   outputFile := output;
+                                   initFile();
+                                   HashTable.clear parentTable; 
+                                   callframe_id = ref 0; 
+                                   HashTable.clear globalScopedSymbolTable; 
+                                   callstack = ref[]; 
+                                   runProgram(retBlock (!inputFile));
+                                   closeFile())
 end;
