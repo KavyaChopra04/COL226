@@ -9,14 +9,15 @@ fun eof () = Tokens.EOF(!pos,!pos)
 %header (functor CalcLexFun(structure Tokens: Calc_TOKENS));
 alpha=[A-Za-z];
 digit=[0-9];
+allbutstar=[^*];
 ws = [\ \t];
-alnum = [alpha|digit];
+alnum = [A-Za-z0-9];
 %%
 \n => (pos := !pos + 1; lex());
 {ws}+ => (lex());
+"(*"([^*]|\*+[^*/)])*\*+")" => (lex());
 {digit}*"."{digit}*"("{digit}+")" => (Tokens.NUMRAT((ExpOp.fromDecimal(yytext)), !pos, !pos));
 {digit}+ => (Tokens.NUMINT ((BigInt.toBigint(yytext)), !pos, !pos));
-
 "rational" => (Tokens.RATIONALDEC(!pos,!pos));
 "integer" => (Tokens.INTEGERDEC(!pos,!pos));
 "boolean" => (Tokens.BOOLEANDEC(!pos,!pos));
@@ -47,7 +48,7 @@ alnum = [alpha|digit];
 "&&" => (Tokens.AND(!pos,!pos));
 "||" => (Tokens.OR(!pos,!pos));
 
-{alpha}+{alnum}* => (Tokens.ID(yytext,!pos,!pos));
+{alpha}{alnum}* => (Tokens.ID(yytext,!pos,!pos));
 
 "(*" => (Tokens.LCOMMENT(!pos,!pos));
 "*)" => (Tokens.RCOMMENT(!pos,!pos));

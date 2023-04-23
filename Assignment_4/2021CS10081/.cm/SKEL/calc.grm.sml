@@ -1,2 +1,2 @@
 Skeleton 5
-ae"CalcLrValsFun"i2aä¢Token"gp1c"TOKEN"f±ÿjh2aä¢ParserData"h7aä¢Header"h2egp1d"DataTypes"f2ä¢String"ä¢ExpOp"aä¢LrTable"gp2ÿÿ.Caÿgpÿ(båçğ±ÿ.f6d"Char"Cd"List"ÿd"General"ÿ.d"Array"Nbåçğ±ÿ?d2f2ÿ%d"BigInt"aä¢MlyValue"è0ad"EC"h2ÿ‚	bÿ‚;æ±ÿƒad"Actions"h2bÿ‚;f2ÿ.ÿƒÿƒ.Naä¢Tokens"jÿƒçğ±ã¢Calc_TOKENS"h2aÿ/gp1c"PARSER_DATA"aÿ„ÿ„
+ae"CalcLrValsFun"i2aä¢Token"gp1c"TOKEN"f±ÿjh2aä¢ParserData"h7aä¢Header"h2egp1d"DataTypes"f5Cä¢List"ä¢String"d"HashTable"d"HashString"ä¢ExpOp"Naä¢LrTable"gp2ÿÿ‚Caÿgpÿ(båçğ±ÿ‚f6d"Char"Cÿÿ$d"General"ÿ‚d"Array"Nbåçğ±ÿ?d2f2ÿ‚d"BigInt"aä¢MlyValue"è0ad"EC"h2ÿ‚+bÿƒæ±ÿƒ0ad"Actions"h2bÿƒf2ÿ‚ÿƒ0ÿ„Naä¢Tokens"jÿƒ;çğ±ã¢Calc_TOKENS"h2aÿ/gp1c"PARSER_DATA"aÿ„/ÿ„<

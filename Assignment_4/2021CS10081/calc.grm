@@ -1,10 +1,13 @@
 (* Sample interactive calculator for ML-Yacc *)
 open DataTypes
-val ListofBindings: (string * ExpOp.rational) list ref = ref [];
+val ListofBindings: (string * TYPE) list ref = ref [];
 exception UndeclaredBinding
-fun intlistToString []      = ""
-  | intlistToString [(x,y)]     = x^" : "^ExpOp.showDecimal(y)
-  | intlistToString ((x,y)::xs) = x^" : "^ExpOp.showDecimal(y)^ " , " ^ intlistToString xs 
+exception RedeclaredBinding
+fun intlistToString []      = "fin"
+  | intlistToString ((x,RATIONAL)::xs) = x^" : "^"RATIONAL"^ " , " ^ intlistToString xs 
+  | intlistToString ((x,INT)::xs) = x^" : "^"INT"^ " , " ^ intlistToString xs
+  | intlistToString ((x,BOOL)::xs) = x^" : "^"BOOLEAN"^ " , " ^ intlistToString xs
+  | intlistToString ((x,PROCEDURE)::xs) = x^" : "^"PROCEDURE"^ " , " ^ intlistToString xs
 
 fun finserval(id, xs) = 
   if(null(xs)) then 
@@ -24,7 +27,20 @@ fun finserval(id, xs) =
 fun addBinding(id, exp, xs) = 
        ( xs := (id, exp) :: !xs ; xs)
 
+fun createTable(DeclarationSeq, ProcDecls) = 
+let 
+val ht : (string, TYPE) HashTable.hash_table =
+    HashTable.mkTable (HashString.hashString, op=) (42, Fail "not found")
+in 
+  (List.app (fn DEC(Decs, typ) => List.app (fn id => let val x = HashTable.find ht id in if(x = NONE) then HashTable.insert ht (id, typ) else raise RedeclaredBinding end) Decs ) DeclarationSeq;
+  List.app (fn PROCDEF(id, _) => let val x = HashTable.find ht id in if(x = NONE) then  HashTable.insert ht (id, PROCEDURE)  else raise RedeclaredBinding end ) ProcDecls ;
+  ht)
+end 
+ (* errro handling for RedeclaredBinding here *)
+
 %%
+
+
 (* %pos declares the type of positions for terminals.
    Each symbol has an associated left and right position. *)
 
@@ -137,12 +153,14 @@ fun addBinding(id, exp, xs) =
 
 START : Block (PROG(Block))
 
-Block : DeclarationSeq ProcDecls LBRACE Commands RBRACE (BLOCK(DeclarationSeq, ProcDecls, Commands))
+(* print(intlistToString(HashTable.listItemsi((createTable(DeclarationSeq, ProcDecls))))); *)
+
+Block : DeclarationSeq ProcDecls LBRACE Commands RBRACE (BLOCK(DeclarationSeq, ProcDecls, Commands, SCOPE_TABLE((createTable(DeclarationSeq, ProcDecls))), ref 0))
 
 DeclarationSeq : RatVarDecls IntVarDecls BoolVarDecls (RatVarDecls :: IntVarDecls :: BoolVarDecls :: [])
 
 RatVarDecls : ((DEC([], RATIONAL)))
-            | RATIONALDEC Decs SEMI (print("adding rational bindings"); DEC(Decs, RATIONAL))
+            | RATIONALDEC Decs SEMI (DEC(Decs, RATIONAL))
 
 IntVarDecls : (DEC([], INT))
             | INTEGERDEC Decs SEMI(DEC(Decs, INT))
@@ -165,7 +183,7 @@ Commands : (([]))
 Command : ID ASSIGN Expression ((SET(ID, Expression)))
         | CALL ID  ((Call(ID)))
         | READ LPAREN ID RPAREN ((Read(ID)))
-        | PRINT LPAREN Expression LPAREN ((Print(Expression)))
+        | PRINT LPAREN Expression RPAREN ((Print(Expression)))
         | IF Expression THEN LBRACE Commands RBRACE ELSE LBRACE Commands RBRACE FI ((IFFI(Expression,Commands1,Commands2)))
         | WHILE Expression DO LBRACE Commands RBRACE OD (WHILE(Expression,Commands))
 
@@ -199,17 +217,18 @@ New5Expression: New6Expression ((New6Expression))
               | New5Expression RATDIV New6Expression ((RATDIV(New5Expression, New6Expression)))
 
 New6Expression: New7Expression ((New7Expression))
-              | INVERSE New7Expression ((INVERSE(New7Expression)))
+              | INVERSE New6Expression ((INVERSE(New6Expression)))
               (* | MAKERAT New7Expression New7Expression ((MAKERAT(New7Expression, New7Expression))) *)
-              | RAT New7Expression ((RAT(New7Expression)))
-              | SHOWRAT New7Expression ((SHOWRAT(New7Expression)))
-              | SHOWDECIMAL New7Expression ((SHOWDECIMAL(New7Expression)))
-              | FROMDECIMAL New7Expression ((FROMDECIMAL(New7Expression)))
-              | TODECIMAL New7Expression ((TODECIMAL(New7Expression)))
-              | NEG New7Expression ((NEG(New7Expression)))
-              | NOT New7Expression ((NOT(New7Expression)))
+              | RAT New6Expression ((RAT(New6Expression)))
+              | SHOWRAT New6Expression ((SHOWRAT(New6Expression)))
+              | SHOWDECIMAL New6Expression ((SHOWDECIMAL(New6Expression)))
+              | FROMDECIMAL New6Expression ((FROMDECIMAL(New6Expression)))
+              | TODECIMAL New6Expression ((TODECIMAL(New6Expression)))
+              | NEG New6Expression ((NEG(New6Expression)))
+              | NOT New6Expression ((NOT(New6Expression)))
 
-New7Expression: NUMRAT ((RATIONAL_VALUE(NUMRAT)))
+New7Expression: FROMDECIMAL LPAREN NUMRAT RPAREN ((RATIONAL_VALUE(NUMRAT)))
+              | MAKERAT LPAREN Expression COMMA Expression RPAREN ((MAKERAT(Expression1, Expression2)))
               | NUMINT ((INTEGER_VALUE(NUMINT)))
               | TRUE ((TRUE))
               | FALSE ((FALSE))

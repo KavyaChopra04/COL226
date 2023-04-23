@@ -1,0 +1,7 @@
+val r = DataTypes.PLUS(DataTypes.INTEGER_VALUE(q), DataTypes.INTEGER_VALUE(k));
+
+val Calc.CALLFRAME(x,y, frame) = hd(!Calc.callstack)
+
+val q = BigInt.toBigint("1");
+
+"(*"([^*]|\*+[^*/)])*\*+")" => (lex());

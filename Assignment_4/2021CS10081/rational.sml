@@ -164,12 +164,12 @@ structure BigInt : BIGINT =
                     (rev(subtractLists(rev(l1), rev(l2), 0)), s1)
         fun subtractBigint ((l1, s1), (l2,s2)) = 
             if s1 = ~s2 then 
-                (rev(addLists(rev(l1), rev(l2), 0)), s1) 
+                (rev(addLists(rev(trimzero(l1)), rev(trimzero(l2)), 0)), s1) 
             else 
-                if cmp(l1, l2) then 
-                    (rev(subtractLists(rev(l2), rev(l1), 0)), ~s2) 
+                if cmp(trimzero(l1), trimzero(l2)) then 
+                    (rev(subtractLists(rev(trimzero(l2)), rev(trimzero(l1)), 0)), ~s2) 
                 else 
-                    (rev(subtractLists(rev(l1), rev(l2), 0)), s1)
+                    (rev(subtractLists(rev(trimzero(l1)), rev(trimzero(l2)), 0)), s1)
         fun multiplyBigint ((l1, s1), (l2,s2)) = 
             if s1 = s2 then 
                 (rev(multiplyHelper(l1, rev(l2))), 1) 
@@ -193,10 +193,12 @@ structure BigInt : BIGINT =
                 if(x=0) then (1::list, 1)
                 else power10Bigint(x-1, 0::list)
         fun showBigint (l, s) =
-            if s = ~1 then 
-                "~" ^ implode (map (fn s => String.sub(s, 0)) (map Int.toString l)) 
+            if(null (trimzero(l))) then "0"
             else 
-                implode (map (fn s => String.sub(s, 0)) (map Int.toString l))
+                if s = ~1 then 
+                    "~" ^ implode (map (fn s => String.sub(s, 0)) (map Int.toString (trimzero(l)))) 
+                else 
+                    implode (map (fn s => String.sub(s, 0)) (map Int.toString (trimzero(l))))
         fun equalBigint ((l1, s1), (l2, s2)) = 
             if s1 = s2 then 
                 if length(trimzero(l1)) = length(trimzero(l2)) then 
@@ -320,9 +322,14 @@ functor RATIONAL(BigInt: BIGINT) : RATIONAL =
         fun equal ((n1, d1), (n2, d2)) = 
             if BigInt.equalBigint(BigInt.multiplyBigint(n1, d2), BigInt.multiplyBigint(n2, d1)) then true
             else false
-        fun less ((n1, d1), (n2, d2)) = 
+        fun less (x, y) = 
+            let
+                val (n1, d1) = valOf(make_rat(x));
+                val (n2, d2) = valOf(make_rat(y));
+            in            
             if BigInt.lessBigint(BigInt.multiplyBigint(n1, d2), BigInt.multiplyBigint(n2, d1)) then true
             else false
+            end
         fun add ((n1, d1), (n2, d2)) = 
             case make_rat(BigInt.addBigint(BigInt.multiplyBigint(n1, d2), BigInt.multiplyBigint(n2, d1)), BigInt.multiplyBigint(d1, d2)) of
                 NONE => raise rat_error
