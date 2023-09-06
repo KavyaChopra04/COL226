@@ -1,7 +1,0 @@
-integer x,y,z;
-{
-    x:=~125;
-    y:=~100;
-    print(x%y);
-    print(x/y);
-}

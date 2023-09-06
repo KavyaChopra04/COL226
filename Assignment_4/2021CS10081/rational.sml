@@ -3,6 +3,7 @@ signature BIGINT =
         type bigint = int list * int
         exception NegativePower
         exception ZeroDivision
+        exception InvalidIntegerInput
         val repZero: bigint
         val extlist: bigint -> int list
         val calcRecPart: bigint * bigint * int list list * int list -> string * string
@@ -24,6 +25,7 @@ structure BigInt : BIGINT =
     struct 
         exception ZeroDivision
         exception NegativePower
+        exception InvalidIntegerInput
         (*Helper functions*)
         fun listpreindex(l, i) = 
             if i = 0 then []
@@ -132,7 +134,7 @@ structure BigInt : BIGINT =
                             val nonrec = listpreindex(nqlist, x)
                             val recu = listpostindex(nqlist, x)
                         in
-                            (listToString(trimzero(nonrec)), listToString(recu))
+                            (listToString((nonrec)), listToString(recu))
                         end
                         else 
                             if(null quo) then
@@ -149,9 +151,9 @@ structure BigInt : BIGINT =
             if s = "" then ([], 1) 
             else 
                 if String.sub(s,0) = #"~" then 
-                    (trimzero(map (fn x => ord x - ord #"0") (explode (String.extract (s, 1, NONE)))), ~1) 
+                    (trimzero(map (fn x => if(ord x - ord #"0")>=0 andalso (ord x - ord #"0")<10 then (ord x - ord #"0") else raise InvalidIntegerInput) (explode (String.extract (s, 1, NONE)))), ~1) 
                 else 
-                    (trimzero(map (fn x => ord x - ord #"0") (explode s)), 1)
+                    (trimzero(map (fn x => if(ord x - ord #"0")>=0 andalso (ord x - ord #"0")<10 then (ord x - ord #"0") else raise InvalidIntegerInput) (explode s)), 1)
         fun revSign ((l, s)) = 
             (l, s * ~1)
         fun addBigint ((l1, s1), (l2,s2)) = 
@@ -181,10 +183,7 @@ structure BigInt : BIGINT =
             if s1 = s2 then 
                 (trimzero(#1 (divideHelper([], l2, l1))), 1) 
             else 
-                if(s1 = ~1) then
-                    (trimzero(#1 (divideHelper([], l2, l1))), ~1)
-                else
-                    addBigint(((trimzero(#1 (divideHelper([], l2, l1)))), ~1), ([1], ~1))
+                (trimzero(#1 (divideHelper([], l2, l1))), ~1)
                     
         fun moduloBigint((l1,s1), (l2,s2)) = 
             if s1 = s2 then 
@@ -204,15 +203,17 @@ structure BigInt : BIGINT =
                 else 
                     implode (map (fn s => String.sub(s, 0)) (map Int.toString (trimzero(l))))
         fun equalBigint ((l1, s1), (l2, s2)) = 
-            if s1 = s2 then 
-                if length(trimzero(l1)) = length(trimzero(l2)) then 
-                    if null(l1) orelse null(l2) then true
-                    else 
-                        if hd(l1) = hd(l2) then 
-                            equalBigint((tl l1, s1), (tl l2, s2)) 
-                        else false
+            if(trimzero(l1) = trimzero(l2) andalso null(trimzero(l1))) then true
+            else 
+                if s1 = s2 then
+                    if length(trimzero(l1)) = length(trimzero(l2)) then 
+                        if null(l1) orelse null(l2) then true
+                        else 
+                            if hd(l1) = hd(l2) then 
+                                equalBigint((tl l1, s1), (tl l2, s2)) 
+                            else false
+                    else false
                 else false
-            else false
         fun greaterBigint((l1, s1), (l2, s2)) = 
             if s1 = s2 then 
                 if s1 = 1 then 
@@ -275,6 +276,7 @@ signature RATIONAL =
         type rational
         type bigint
         exception rat_error
+        exception NoDecimalPoint
         val make_rat: bigint * bigint -> rational option
         val rat: bigint -> rational option
         val reci: bigint -> rational option
@@ -297,6 +299,7 @@ functor RATIONAL(BigInt: BIGINT) : RATIONAL =
         type bigint = BigInt.bigint
         type rational = BigInt.bigint * BigInt.bigint
         exception rat_error;
+        exception NoDecimalPoint;
         fun trimzero(xs: int list) = 
             if null(xs) then [] 
             else
@@ -368,45 +371,60 @@ functor RATIONAL(BigInt: BIGINT) : RATIONAL =
                     val (nonrecPart, recPart) = BigInt.calcRecPart(rem, d1, [BigInt.extlist(rem)], [])
                 in
                     if(null(trimzero(#1 main))) then 
-                        BigInt.showBigint (([0], 1)) ^ "." ^ nonrecPart ^ "(" ^ recPart ^ ")"
-                    else 
-                        BigInt.showBigint main ^ "." ^ nonrecPart ^ "(" ^ recPart ^ ")"
+                            BigInt.showBigint (([0], 1)) ^ "." ^ nonrecPart ^ "(" ^ recPart ^ ")"
+                        else 
+                            BigInt.showBigint main ^ "." ^ nonrecPart ^ "(" ^ recPart ^ ")"
                 end
         fun toDecimal(n,d)  = showDecimal(n,d)
         fun parseRat(s: string)= 
             if(String.sub(s,0)= #"~") then 
                 let 
-                    val decpoint=getIndex(s, ".", 0)
-                    val num=String.extract(s, 1, SOME(valOf(SOME(decpoint))-1))
-                    val nonrecPart=String.extract(s, decpoint+1,    SOME(getIndex(s, "(", 0)-decpoint-1))
-                    val recPart=String.extract(s, getIndex(s, "(", 0)+1, SOME(getIndex(s, ")", 0)-getIndex(s, "(", 0)-1))
-                    val num1=BigInt.toBigint(num^nonrecPart^recPart)
-                    val num2=BigInt.toBigint(num^nonrecPart)
-                in
-                    neg(valOf(make_rat(BigInt.subtractBigint(num1, num2),BigInt.subtractBigint(BigInt.power10Bigint(size(recPart) + size(nonrecPart), []), BigInt.power10Bigint(size(nonrecPart), [])) )))
+                    val decpoint = getIndex(s, ".", 0)
+                in 
+                    if(decpoint = ~1) then raise NoDecimalPoint
+                    else
+                        let
+                            val num=String.extract(s, 1, SOME(valOf(SOME(decpoint))-1))
+                            val nonrecPart=String.extract(s, decpoint+1,    SOME(getIndex(s, "(", 0)-decpoint-1))
+                            val recPart=String.extract(s, getIndex(s, "(", 0)+1, SOME(getIndex(s, ")", 0)-getIndex(s, "(", 0)-1))
+                            val num1=BigInt.toBigint(num^nonrecPart^recPart)
+                            val num2=BigInt.toBigint(num^nonrecPart)
+                        in
+                            neg(valOf(make_rat(BigInt.subtractBigint(num1, num2),BigInt.subtractBigint(BigInt.power10Bigint(size(recPart) + size(nonrecPart), []), BigInt.power10Bigint(size(nonrecPart), [])) )))
+                        end
                 end
             else
                 if(String.sub(s,0) = #"+") then 
                     let 
                         val decpoint=getIndex(s, ".", 0)
-                        val num=String.extract(s, 1, SOME(valOf(SOME(decpoint))-1))
-                        val nonrecPart=String.extract(s, decpoint+1,    SOME(getIndex(s, "(", 0)-decpoint-1))
-                        val recPart=String.extract(s, getIndex(s, "(", 0)+1, SOME(getIndex(s, ")", 0)-getIndex(s, "(", 0)-1))
-                        val num1=BigInt.toBigint(num^nonrecPart^recPart)
-                        val num2=BigInt.toBigint(num^nonrecPart)
-                    in
-                       valOf(make_rat(BigInt.subtractBigint(num1, num2),BigInt.subtractBigint(BigInt.power10Bigint(size(recPart) + size(nonrecPart), []), BigInt.power10Bigint(size(nonrecPart), [])) ))
+                    in 
+                        if(decpoint = ~1) then raise NoDecimalPoint
+                        else
+                            let
+                                val num=String.extract(s, 1, SOME(valOf(SOME(decpoint))-1))
+                                val nonrecPart=String.extract(s, decpoint+1,    SOME(getIndex(s, "(", 0)-decpoint-1))
+                                val recPart=String.extract(s, getIndex(s, "(", 0)+1, SOME(getIndex(s, ")", 0)-getIndex(s, "(", 0)-1))
+                                val num1=BigInt.toBigint(num^nonrecPart^recPart)
+                                val num2=BigInt.toBigint(num^nonrecPart)
+                            in
+                            valOf(make_rat(BigInt.subtractBigint(num1, num2),BigInt.subtractBigint(BigInt.power10Bigint(size(recPart) + size(nonrecPart), []), BigInt.power10Bigint(size(nonrecPart), [])) ))
+                            end
                     end
                 else
                     let 
                         val decpoint=getIndex(s, ".", 0)
-                        val num=String.extract(s, 0, SOME(decpoint))
-                        val nonrecPart=String.extract(s, decpoint+1,    SOME(getIndex(s, "(", 0)-decpoint-1))
-                        val recPart=String.extract(s, getIndex(s, "(", 0)+1, SOME(getIndex(s, ")", 0)-getIndex(s, "(", 0)-1))
-                        val num1=BigInt.toBigint(num^nonrecPart^recPart)
-                        val num2=BigInt.toBigint(num^nonrecPart)
-                    in
-                        valOf(make_rat(BigInt.subtractBigint(num1, num2),BigInt.subtractBigint(BigInt.power10Bigint(size(recPart) + size(nonrecPart), []), BigInt.power10Bigint(size(nonrecPart), [])) ))
+                    in 
+                        if(decpoint = ~1) then raise NoDecimalPoint
+                        else
+                            let
+                                val num=String.extract(s, 0, SOME(decpoint))
+                                val nonrecPart=String.extract(s, decpoint+1,    SOME(getIndex(s, "(", 0)-decpoint-1))
+                                val recPart=String.extract(s, getIndex(s, "(", 0)+1, SOME(getIndex(s, ")", 0)-getIndex(s, "(", 0)-1))
+                                val num1=BigInt.toBigint(num^nonrecPart^recPart)
+                                val num2=BigInt.toBigint(num^nonrecPart)
+                            in
+                                valOf(make_rat(BigInt.subtractBigint(num1, num2),BigInt.subtractBigint(BigInt.power10Bigint(size(recPart) + size(nonrecPart), []), BigInt.power10Bigint(size(nonrecPart), [])) ))
+                            end
                     end
         fun fromDecimal(s: string) = parseRat(s)
         fun fromInteger(s: string) = valOf(rat(BigInt.toBigint(s)))

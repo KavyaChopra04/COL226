@@ -226,6 +226,7 @@ New6Expression: New7Expression ((New7Expression))
               | TODECIMAL New6Expression ((TODECIMAL(New6Expression)))
               | NEG New6Expression ((NEG(New6Expression)))
               | NOT New6Expression ((NOT(New6Expression)))
+              | PLUS New6Expression ((UNPLUS(New6Expression)))
 
 New7Expression: FROMDECIMAL LPAREN NUMRAT RPAREN ((RATIONAL_VALUE(NUMRAT)))
               | MAKERAT LPAREN Expression COMMA Expression RPAREN ((MAKERAT(Expression1, Expression2)))

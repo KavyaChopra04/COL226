@@ -1,0 +1,6 @@
+member(X,[X|_]).
+member(X,[Y|T]):- X \= Y, member(X,T).
+occurTwice(X, [X|T]) :- member(X, T).
+occurTwice(X, [Y|T]) :- X \= Y, occurTwice(X, T).
+has_no_triplicates([]).
+has_no_triplicates([H|T]) :- \+ occurTwice(H, T), has_no_triplicates(T).

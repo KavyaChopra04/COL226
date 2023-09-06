@@ -1,0 +1,26 @@
+(*rational x;*)
+integer x,y,gcd;
+procedure gcdd
+    integer tempx, tempy;
+    {
+        if (y = 0) then {
+            gcd := x;
+        } 
+        else {
+            tempx:=x;
+            tempy:=y;
+            x:=tempy;
+            y:=tempx%tempy;
+            call gcdd;
+            x:=tempx;
+            y:=tempy;
+        }
+        fi;
+    };
+
+{
+    x:=12;
+    y:=18;
+    call gcdd;
+    print((gcd));
+}

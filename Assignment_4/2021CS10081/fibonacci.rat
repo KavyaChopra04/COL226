@@ -1,0 +1,65 @@
+rational input,rfibresult;
+integer i,fibresult;
+
+procedure fib
+    integer tempi,tempf1,tempf2;
+    {
+    if i=0 then 
+        {fibresult:=0;}
+    else 
+        {
+            if i=1 then 
+                {fibresult:=1;}
+            else 
+                {
+                    tempi:=i;
+                    i:=tempi-1;
+                    call fib;
+                    tempf1:=fibresult;
+                    i:=tempi-2;
+                    call fib;
+                    tempf2:=fibresult;
+                    fibresult := tempf1 + tempf2;
+                    i:=tempi;
+                }
+            fi;
+        }
+    fi;
+    };
+
+procedure fibwhile
+    integer tempi,tempf1,tempf2,tempf3;
+    {
+    tempf1:=0;
+    tempf2:=1;
+    tempi:=2;
+    while tempi<=i do
+        {
+            tempf3:=tempf1+tempf2;
+            tempf1:=tempf2;
+            tempf2:=tempf3;
+            tempi:=tempi+1;
+        }
+    od;
+    if i=0 then 
+        {fibresult:=0;}
+    else 
+        {
+            if i=1 then 
+                {fibresult:=1;}
+            else 
+                {fibresult:=tempf3;}
+            fi;
+        }
+    fi;
+    };
+{
+    i:=8;
+    call fib;
+    print(fibresult);
+    print(i);
+    i:=8;
+    call fibwhile;
+    print(fibresult);
+    print(i);
+}

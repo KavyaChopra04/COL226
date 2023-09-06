@@ -1,0 +1,5 @@
+subsequence([], _).
+subsequence([X|Xs], [X|Ys]) :- subsequence(Xs, Ys).
+subsequence([X|Xs], [Y|Ys]) :- X \= Y, subsequence([X|Xs], Ys).
+member(X,[X|_]).
+member(X,[Y|T]):- X \= Y, member(X,T).

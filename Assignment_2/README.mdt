@@ -1,4 +1,6 @@
 Some errors and how I dealt with them
+
+
 ## Bold, Italics, Underline:
 Here, I just considered pairwise nesting starting from the left, that is all the words between asterik 1 and asterik 2 would be italicised,
 and those between asterik 3 and asterik 4 would be too, and so on

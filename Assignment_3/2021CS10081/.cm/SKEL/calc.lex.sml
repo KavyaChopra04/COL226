@@ -1,0 +1,2 @@
+Skeleton 5
+ae"CalcLexFun"i2aä¢Tokens"gp1c"Calc_TOKENS"f3d"Char"ä¢TextIO"ä¢Vector"h3aä¢yyInput"jh3aä¢TIO"gp1ÿ4ad"TSIO"gp2ÿd"StreamIO"ad"TPIO"gp1d"TextPrimIO"h0aä¢UserDeclarations"h1aÿgp1ÿbbd2egp1ÿ‚f7d"IO"d"List"Cÿÿ‚ÿ=d"ExpOp"ÿ	Nf0f1ÿ	

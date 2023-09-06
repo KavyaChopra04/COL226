@@ -1,0 +1,9 @@
+Library
+  structure Calc
+is
+  rational.sml (* Lot of datatypes *)
+  calc.lex (* Lexer rules. *)
+  calc.grm:MLYacc (* Parser rules. *)
+  calc.sml (* Build the parser *)
+  $/basis.cm
+  $/ml-yacc-lib.cm

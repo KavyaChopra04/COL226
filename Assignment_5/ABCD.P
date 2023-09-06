@@ -1,0 +1,54 @@
+cancross(alice, none).
+cancross(bob, carol).
+cancross(bob, none).
+cancross(carol, alice).
+cancross(carol, bob).
+cancross(carol, davis).
+cancross(carol, none).
+cancross(davis, alice).
+cancross(davis, bob).
+cancross(davis, carol).
+cancross(davis, none).
+
+member(X,[X|_]).
+member(X,[Y|T]):- X\=Y, member(X,T).
+occurTwice(X, [X|T]) :- member(X, T).
+occurTwice(X, [Y|T]) :- X \= Y, occurTwice(X, T).
+
+left_right(Paddler, Passenger) :- cancross(Paddler, Passenger).
+
+assign(X, X).
+assign(X, Y) :- assign(Y, Y).
+
+right_left(Paddler) :- cancross(Paddler, none).
+
+assignLeft(Paddler, Passenger, LeftBank, RightBank, NewLeftBank, NewRightBank) :- 
+    select(Passenger, LeftBank, LeftBank1), select(Paddler, LeftBank1, NewLeftBank), left_right(Paddler, Passenger),
+    append(RightBank, [Paddler, Passenger], NewRightBank).
+
+assignRight(Paddler, LeftBank, RightBank, NewLeftBank, NewRightBank) :- 
+    select(Paddler, RightBank, NewRightBank), right_left(Paddler),
+    append(LeftBank, [Paddler], NewLeftBank).
+
+
+abcd :- LeftBank = [alice, bob, carol, davis], 
+                RightBank = [],
+                X = [FirstPaddler, SecondPaddler, ThirdPaddler, FourthPaddler, FifthPaddler],
+                assignLeft(FirstPaddler, FirstPassenger, LeftBank, RightBank, NewLeftBank, NewRightBank), 
+                assignRight(SecondPaddler, NewLeftBank, NewRightBank, NewLeftBank1, NewRightBank1),
+                assignLeft(ThirdPaddler, ThirdPassenger, NewLeftBank1, NewRightBank1, NewLeftBank2, NewRightBank2),
+                assignRight(FourthPaddler, NewLeftBank2, NewRightBank2, NewLeftBank3, NewRightBank3),
+                assignLeft(FifthPaddler, FifthPassenger, NewLeftBank3, NewRightBank3, FinalLeft, FinalRight),
+                member(alice, X), member(bob, X), member(carol, X), member(davis, X),
+                member(alice, FinalRight), member(bob, FinalRight), member(carol, FinalRight), member(davis, FinalRight),
+                write('First Paddler: '), write(FirstPaddler), write(', FirstPassenger: '), write(FirstPassenger), nl,
+                write('Second Paddler: '), write(SecondPaddler), nl,
+                write('Third Paddler: '), write(ThirdPaddler), write(', ThirdPassenger: '), write(ThirdPassenger), nl,
+                write('Fourth Paddler: '), write(FourthPaddler), nl,
+                write('Fifth Paddler: '), write(FifthPaddler), write(', FifthPassenger: '), write(FifthPassenger), nl,
+                ((occurTwice(alice, X), writeD(alice)) ; (occurTwice(bob, X), writeD(bob)) ; (occurTwice(carol, X), writeD(carol)) ; (occurTwice(davis, X), writeD(davis))).
+
+writeD(X) :- write(X), write(' is the double paddler'), nl.
+                
+
+

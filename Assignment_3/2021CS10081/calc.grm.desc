@@ -1,0 +1,361 @@
+
+state 0:
+
+	START : .  (reduce by rule 0)
+	START : . LBRACE BINDING RBRACE 
+	START : . LBRACE BINDING RBRACE EXP 
+	START : . EXP 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+	LBRACE	shift 4
+
+	EXP	goto 3
+	TERM	goto 2
+	FACTOR	goto 1
+	START	goto 28
+
+	.	reduce by rule 0
+
+
+state 1:
+
+	TERM : FACTOR .  (reduce by rule 9)
+
+
+
+	.	reduce by rule 9
+
+
+state 2:
+
+	EXP : TERM .  (reduce by rule 6)
+	TERM : TERM . TIMES FACTOR 
+	TERM : TERM . DIV FACTOR 
+
+	TIMES	shift 9
+	DIV	shift 8
+
+
+	.	reduce by rule 6
+
+
+state 3:
+
+	EXP : EXP . PLUS TERM 
+	EXP : EXP . SUB TERM 
+	START : EXP .  (reduce by rule 3)
+
+	PLUS	shift 11
+	SUB	shift 10
+
+
+	.	reduce by rule 3
+
+
+state 4:
+
+	START : LBRACE . BINDING RBRACE 
+	START : LBRACE . BINDING RBRACE EXP 
+
+	ID	shift 13
+
+	BINDING	goto 12
+
+	.	error
+
+
+state 5:
+
+	FACTOR : LPAREN . EXP RPAREN 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+
+	EXP	goto 14
+	TERM	goto 2
+	FACTOR	goto 1
+
+	.	error
+
+
+state 6:
+
+	FACTOR : NUM .  (reduce by rule 12)
+
+
+
+	.	reduce by rule 12
+
+
+state 7:
+
+	FACTOR : ID .  (reduce by rule 14)
+
+
+
+	.	reduce by rule 14
+
+
+state 8:
+
+	TERM : TERM DIV . FACTOR 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+
+	FACTOR	goto 15
+
+	.	error
+
+
+state 9:
+
+	TERM : TERM TIMES . FACTOR 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+
+	FACTOR	goto 16
+
+	.	error
+
+
+state 10:
+
+	EXP : EXP SUB . TERM 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+
+	TERM	goto 17
+	FACTOR	goto 1
+
+	.	error
+
+
+state 11:
+
+	EXP : EXP PLUS . TERM 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+
+	TERM	goto 18
+	FACTOR	goto 1
+
+	.	error
+
+
+state 12:
+
+	START : LBRACE BINDING . RBRACE 
+	START : LBRACE BINDING . RBRACE EXP 
+	BINDING : BINDING . COMMA ID EQ EXP 
+
+	RBRACE	shift 20
+	COMMA	shift 19
+
+
+	.	error
+
+
+state 13:
+
+	BINDING : ID . EQ EXP 
+
+	EQ	shift 21
+
+
+	.	error
+
+
+state 14:
+
+	EXP : EXP . PLUS TERM 
+	EXP : EXP . SUB TERM 
+	FACTOR : LPAREN EXP . RPAREN 
+
+	PLUS	shift 11
+	SUB	shift 10
+	RPAREN	shift 22
+
+
+	.	error
+
+
+state 15:
+
+	TERM : TERM DIV FACTOR .  (reduce by rule 11)
+
+
+
+	.	reduce by rule 11
+
+
+state 16:
+
+	TERM : TERM TIMES FACTOR .  (reduce by rule 10)
+
+
+
+	.	reduce by rule 10
+
+
+state 17:
+
+	EXP : EXP SUB TERM .  (reduce by rule 8)
+	TERM : TERM . TIMES FACTOR 
+	TERM : TERM . DIV FACTOR 
+
+	TIMES	shift 9
+	DIV	shift 8
+
+
+	.	reduce by rule 8
+
+
+state 18:
+
+	EXP : EXP PLUS TERM .  (reduce by rule 7)
+	TERM : TERM . TIMES FACTOR 
+	TERM : TERM . DIV FACTOR 
+
+	TIMES	shift 9
+	DIV	shift 8
+
+
+	.	reduce by rule 7
+
+
+state 19:
+
+	BINDING : BINDING COMMA . ID EQ EXP 
+
+	ID	shift 23
+
+
+	.	error
+
+
+state 20:
+
+	START : LBRACE BINDING RBRACE .  (reduce by rule 1)
+	START : LBRACE BINDING RBRACE . EXP 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+
+	EXP	goto 24
+	TERM	goto 2
+	FACTOR	goto 1
+
+	.	reduce by rule 1
+
+
+state 21:
+
+	BINDING : ID EQ . EXP 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+
+	EXP	goto 25
+	TERM	goto 2
+	FACTOR	goto 1
+
+	.	error
+
+
+state 22:
+
+	FACTOR : LPAREN EXP RPAREN .  (reduce by rule 13)
+
+
+
+	.	reduce by rule 13
+
+
+state 23:
+
+	BINDING : BINDING COMMA ID . EQ EXP 
+
+	EQ	shift 26
+
+
+	.	error
+
+
+state 24:
+
+	EXP : EXP . PLUS TERM 
+	EXP : EXP . SUB TERM 
+	START : LBRACE BINDING RBRACE EXP .  (reduce by rule 2)
+
+	PLUS	shift 11
+	SUB	shift 10
+
+
+	.	reduce by rule 2
+
+
+state 25:
+
+	EXP : EXP . PLUS TERM 
+	EXP : EXP . SUB TERM 
+	BINDING : ID EQ EXP .  (reduce by rule 5)
+
+	PLUS	shift 11
+	SUB	shift 10
+
+
+	.	reduce by rule 5
+
+
+state 26:
+
+	BINDING : BINDING COMMA ID EQ . EXP 
+
+	ID	shift 7
+	NUM	shift 6
+	LPAREN	shift 5
+
+	EXP	goto 27
+	TERM	goto 2
+	FACTOR	goto 1
+
+	.	error
+
+
+state 27:
+
+	EXP : EXP . PLUS TERM 
+	EXP : EXP . SUB TERM 
+	BINDING : BINDING COMMA ID EQ EXP .  (reduce by rule 4)
+
+	PLUS	shift 11
+	SUB	shift 10
+
+
+	.	reduce by rule 4
+
+
+state 28:
+
+
+	SEMI	accept
+	EOF	accept
+
+
+	.	error
+
+35 of 82 action table entries left after compaction
+23 goto table entries

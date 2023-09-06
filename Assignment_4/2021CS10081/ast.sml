@@ -7,6 +7,7 @@ sig
     exception TypeMismatch;
     exception InvalidBooleanExpressioninIf;
     exception InvalidBooleanExpressioninWhile;
+    exception InvalidBooleanInput;
     (* val Calc_Tree : DataTypes.AST;
     val Calc_Block : DataTypes.BLOCK; *)
     datatype CALLFRAME = CALLFRAME of int * int * (string, DataTypes.EXP) HashTable.hash_table* (string, DataTypes.BLOCK) HashTable.hash_table;
@@ -30,6 +31,7 @@ end =
     exception RedeclaredBinding;
     exception InvalidBooleanExpressioninIf;
     exception InvalidBooleanExpressioninWhile;
+    exception InvalidBooleanInput;
     exception TypeMismatch;
     exception UndeclaredProcedure;
     val inputFile:string ref = ref "input.rat";
@@ -138,21 +140,21 @@ end =
             in
                 if(isSome(HashTable.find currentFrame var)=false andalso scope_index=scopeindex) then
                     if(parentScope <> NONE) then
-                        (* (print("searching for variable" ^ var ^ " in parentscope "^Int.toString(valOf(parentScope))^"\n"); *)
-                        (lookup(var, tl(callstack), valOf(parentScope)))
+                        (* print("searching for variable" ^ var ^ " in parentscope "^Int.toString(valOf(parentScope))^"\n"); *)
+                        lookup(var, tl(callstack), valOf(parentScope))
                     else
                         raise UndeclaredBinding
                 else 
                     if (isSome(HashTable.find currentFrame var)=false  andalso scope_index<>scopeindex) then
-                        (* (print("searching procedure "^var^"further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n");   *)
-                        (lookup(var, tl(callstack), scopeindex))
+                        (* print("searching procedure "^var^"further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n");   *)
+                        lookup(var, tl(callstack), scopeindex)
                     else 
                         if(isSome(HashTable.find currentFrame var) andalso scope_index = scopeindex) then
-                            (* (print("found value "^var^ "in current scope "^Int.toString(scopeindex)^"\n"); *)
-                            (valOf(HashTable.find currentFrame var))     
+                            (* print("found value "^var^ "in current scope "^Int.toString(scopeindex)^"\n"); *)
+                            valOf(HashTable.find currentFrame var)    
                         else    
-                            (* (print("searching for variable" ^ var ^" further down, the current callframe has scope "^(Int.toString(scope_index))^"\n"); *)
-                            (lookup(var, tl(callstack), scopeindex))            
+                            (* print("searching for variable" ^ var ^" further down, the current callframe has scope "^(Int.toString(scope_index))^"\n"); *)
+                            lookup(var, tl(callstack), scopeindex)         
 
             end    
     fun proclookup(var: string, callstack, scopeindex) = 
@@ -165,21 +167,21 @@ end =
             in
                 if(isSome(HashTable.find proctable var)=false andalso scope_index=scopeindex) then
                     if(parentScope <> NONE) then
-                        (* (print("searching for procedure "^var^"in parentscope "^Int.toString(valOf(parentScope))^"\n"); *)
-                        (proclookup(var, tl(callstack), valOf(parentScope)))
+                        (* print("searching for procedure "^var^"in parentscope "^Int.toString(valOf(parentScope))^"\n"); *)
+                        proclookup(var, tl(callstack), valOf(parentScope))
                     else
                         raise UndeclaredProcedure
                 else 
                     if (isSome(HashTable.find proctable var)=false andalso scope_index<>scopeindex) then
                         (* (print("searching procedure "^var^"further down, the current callframe has scope "^(Int.toString(scopeindex))^"\n");                         *)
-                        (proclookup(var, tl(callstack), scopeindex))
+                        proclookup(var, tl(callstack), scopeindex)
                     else 
                         if(isSome(HashTable.find proctable var) andalso scope_index = scopeindex) then
                             (* (print("found procedure"^var^"in current scope "^Int.toString(scopeindex)^"\n"); *)
-                            (valOf(HashTable.find proctable var))     
+                           valOf(HashTable.find proctable var)     
                         else    
                             (* (print("searching for procedure" ^var^"further down, the current callframe has scope "^(Int.toString(scope_index))^"\n"); *)
-                            (proclookup(var, tl(callstack), scopeindex))    
+                            proclookup(var, tl(callstack), scopeindex)    
             end
     fun evaluateEXP(exp: DataTypes.EXP, scopeindex) =
         let
@@ -271,6 +273,7 @@ end =
                                                         val DataTypes.INTEGER_VALUE(i1) = val1;
                                                         val DataTypes.INTEGER_VALUE(i2) = val2;
                                                     in 
+                                                        (* (print (BigInt.showBigint(i1)); print (BigInt.showBigint(i2)); *)
                                                         if(BigInt.equalBigint(i1, i2)) then (DataTypes.TRUE,DataTypes.BOOL) else (DataTypes.FALSE,DataTypes.BOOL)
                                                     end
                                                 else 
@@ -632,6 +635,27 @@ end =
                                                 end
                                                 else raise TypeMismatch
                                             end
+            |   DataTypes.UNPLUS(e1) => let 
+                                            val (val1, type1) = evaluateEXP(e1, scopeindex);
+                                        in 
+                                            if(type1 = DataTypes.INT) 
+                                            then
+                                                let
+                                                    val DataTypes.INTEGER_VALUE(i1) = val1;
+                                                in 
+                                                    (DataTypes.INTEGER_VALUE(i1),DataTypes.INT)
+                                                end
+                                            else 
+                                                if(type1 = DataTypes.RATIONAL) 
+                                                then
+                                                    let
+                                                        val DataTypes.RATIONAL_VALUE(r1) = val1;
+                                                    in
+                                                        (DataTypes.RATIONAL_VALUE(r1),DataTypes.RATIONAL)
+                                                    end
+                                                else raise TypeMismatch
+                                        end
+            
         end 
     
     
@@ -723,7 +747,7 @@ end =
                                             DataTypes.TRUE => writeFile("tt"^"\n")
                                         |   DataTypes.FALSE => writeFile("ff"^"\n")
                                         |   DataTypes.INTEGER_VALUE(i) => writeFile(BigInt.showBigint(i)^"\n")
-                                        |   DataTypes.RATIONAL_VALUE(i) => writeFile(ExpOp.showRat(i)^"\n")
+                                        |   DataTypes.RATIONAL_VALUE(i) => writeFile(ExpOp.toDecimal(i)^"\n")
                                         |   DataTypes.STRING_VALUE(i) => writeFile(i^"\n")
                                     end
 
@@ -758,7 +782,7 @@ end =
                             in                            case getType(lookup(s, !callstack, scopeindex)) of
                                 DataTypes.INT => set(s, !callstack, scopeindex, DataTypes.INTEGER_VALUE(BigInt.toBigint(snew)))
                             |   DataTypes.RATIONAL => set(s, !callstack, scopeindex, DataTypes.RATIONAL_VALUE(ExpOp.fromDecimal(snew)))
-                            |   DataTypes.BOOL => if(snew = "tt") then (set(s, !callstack, scopeindex, DataTypes.TRUE)) else set(s, !callstack, scopeindex, DataTypes.FALSE)
+                            |   DataTypes.BOOL => if(snew = "tt") then (set(s, !callstack, scopeindex, DataTypes.TRUE)) else if(snew="ff") then set(s, !callstack, scopeindex, DataTypes.FALSE) else raise InvalidBooleanInput
                             |   _ => raise TypeMismatch
                             end)
     

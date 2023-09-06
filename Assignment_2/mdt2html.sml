@@ -170,6 +170,27 @@ fun parseHeader(line) =
     then "<h1>"^String.extract (line, 1, SOME (size(line) - 2))^"</h1>"^String.extract (line, size(line)-1, NONE)
     else line 
 
+fun linkify(string) = 
+    if(String.isSubstring "<http" string andalso String.isSubstring ">" string) then
+    let
+        val firstIndex = getIndex(String.extract(string, 0, NONE) , "<", 0)
+        val secondIndex = getIndex(String.extract(string, firstIndex+1, NONE) , ">", 0)
+        val linkBody = String.substring(string, firstIndex+1, secondIndex)
+        val preLink = String.substring(string, 0, firstIndex)
+
+    in  
+        preLink^"<a href="^linkBody^">&lt"^linkBody^"&gt</a>"^linkify(String.extract(string, secondIndex+1+firstIndex+1, NONE))
+    end
+    else if(String.isSubstring "<" string andalso String.isSubstring ">" string andalso  String.isSubstring"</" string = false) then
+    let
+        val firstIndex = getIndex(String.extract(string, 0, NONE) , "<", 0)
+        val secondIndex = getIndex(String.extract(string, firstIndex+1, NONE) , ">", 0)
+        val linkBody = String.substring(string, firstIndex+1, secondIndex)
+        val preLink = String.substring(string, 0, firstIndex)
+    in
+        preLink^"&lt"^linkBody^"&gt"^linkify(String.extract(string, secondIndex+1+firstIndex+1, NONE))
+    end
+    else string
 
 fun parseBold (string) =
     if (String.isSubstring "**" string) then
@@ -187,10 +208,13 @@ fun parseitalic(string) =
     if (String.isSubstring "*" string) then
     let
     val firstIndex = getIndex(String.extract(string, 0, NONE) , "*", 0)
+    val firstIndexslash = getIndex(String.extract(string, 0, NONE) , "\\*", 0)
     val secondIndex = getIndex(String.extract(string, firstIndex+1, NONE) , "*", 0)
     in
     if(secondIndex = ~1) 
     then string
+    else if(firstIndex = firstIndexslash + 1) then
+    String.substring(string, 0, firstIndex) ^ "*" ^ parseitalic(String.extract(string, firstIndex+1, NONE))
     else
     String.substring(string, 0, firstIndex) ^ "<em>" ^ String.substring(string, firstIndex+1, secondIndex) ^ "</em>" ^ parseitalic(String.extract(string, firstIndex+1+secondIndex+1, NONE))
     end
@@ -212,13 +236,13 @@ fun parseUnderline(string) =
 
     if (String.isSubstring "_" string) then
     let
-    val firstIndex = getIndex(String.extract(string, 0, NONE) , "_", 0)
-    val secondIndex = getIndex(String.extract(string, firstIndex+1, NONE) , "_", 0)
+    val firstIndex = getIndex(String.extract(string, 0, NONE) , "\\_", 0)
+    val secondIndex = getIndex(String.extract(string, firstIndex+1, NONE) , "\\_", 0)
     in
     if(secondIndex = ~1) 
     then remUnderline(string)
     else
-    String.substring(string, 0, firstIndex) ^ "<u>" ^ String.substring(string, firstIndex+1, secondIndex) ^ "</u>" ^ parseUnderline(String.extract(string, firstIndex+secondIndex+1, NONE))
+    String.substring(string, 0, firstIndex) ^ "<u>" ^ String.substring(string, firstIndex+2, secondIndex-1) ^ "</u>" ^ parseUnderline(String.extract(string, firstIndex+secondIndex+2, NONE))
     end
     else string
 fun numstring(livst: char list, stger) = 
@@ -234,7 +258,7 @@ fun numstring(livst: char list, stger) =
 fun parse(string) = 
     if (String.isSubstring "<" string orelse String.isSubstring">" string) then
     if (String.isPrefix "<http" string) then
-    "&lt"^parse(String.extract(string, 1, NONE))
+    "&lt"^"<a href = "^(String.extract(string, 1, NONE))^">"^(String.extract(string, 1, NONE))^"</a>"
     else if (String.isPrefix ">" string) then
     "&gt;"^parse(String.extract(string, 1, NONE))
     else String.extract(string, 0, SOME 1)^parse(String.extract(string, 1, NONE))
@@ -274,7 +298,7 @@ fun processList( listOfLines, prevLine, stack, finalList, liststack, parastate, 
         val italicParsed = parseitalic(boldParsed)
         val line = parseUnderline(parseHorizontalRule(italicParsed))
         val trim= trimw(line,0)
-        val trimline = #1 trim
+        val trimline = linkify(#1 trim)
         val numspace = #2 trim
         val trimprev= trimw(prevLine,0)
         val trimprevline = #1 trimprev

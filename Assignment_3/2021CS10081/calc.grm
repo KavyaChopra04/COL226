@@ -1,0 +1,90 @@
+(* Sample interactive calculator for ML-Yacc *)
+val ListofBindings: (string * ExpOp.rational) list ref = ref [];
+exception UndeclaredBinding
+fun intlistToString []      = ""
+  | intlistToString [(x,y)]     = x^" : "^ExpOp.showDecimal(y)
+  | intlistToString ((x,y)::xs) = x^" : "^ExpOp.showDecimal(y)^ " , " ^ intlistToString xs 
+fun dropWhile(x) = 
+  if(null(x)) then x
+  else if(hd(x) = #" ") then dropWhile(tl(x))
+  else x
+fun trimsp(s) = 
+  let 
+    val x = rev(explode(s))
+    val y = dropWhile(x)
+    val z = implode(rev(y))
+  in 
+    z
+  end
+
+fun finserval(id, xs) = 
+  if(null(xs)) then 
+    (print ("Invalid Expression: No binding found for " ^ id ^ "\n");
+    raise UndeclaredBinding;
+    ExpOp.fromInteger("0"))
+  else 
+  (
+    let  
+      val (id1, expression) = hd(xs)
+    in 
+      if(String.compare(id1, id) = EQUAL) then 
+        expression
+      else 
+        finserval(id, tl(xs))
+    end)
+fun addBinding(id, exp, xs) = 
+       ( xs := (id, exp) :: !xs ; xs)
+%%
+(* %pos declares the type of positions for terminals.
+   Each symbol has an associated left and right position. *)
+
+%eop EOF SEMI
+%pos int
+
+%left SUB PLUS
+%left TIMES DIV
+%nonassoc ID
+%nonassoc NUM
+
+%term ID of string | NUM of ExpOp.rational | PLUS | TIMES | PRINT | SEMI | EOF | DIV | SUB | LPAREN | RPAREN | LBRACE | RBRACE | COMMA | ASSGN | EQ
+%nonterm EXP of ExpOp.rational |EXP1 of ExpOp.rational | TERM of ExpOp.rational| TERM1 of ExpOp.rational | FACTOR of ExpOp.rational | FACTOR1 of ExpOp.rational | START of ((string * ExpOp.rational) list ref * ExpOp.rational option )| BINDING of (string * ExpOp.rational) list ref
+
+%name Calc
+
+%subst PRINT for ID
+%keyword PRINT SEMI
+
+%noshift EOF
+%verbose
+%%
+
+(* the parser returns the value associated with the expression *)
+
+  START : (ref [], NONE)
+        | LBRACE BINDING RBRACE (BINDING, NONE)  
+        | LBRACE BINDING RBRACE EXP (BINDING, SOME EXP)
+        | EXP (ref [], SOME EXP)
+        
+  BINDING : BINDING COMMA ID EQ EXP ((addBinding(ID, EXP1, ListofBindings)))
+          | ID EQ EXP ((addBinding(ID, EXP1, ListofBindings)))
+  EXP : TERM             (TERM)
+      | EXP PLUS TERM    (ExpOp.add(EXP,TERM))
+      | EXP SUB TERM     (ExpOp.subtract(EXP,TERM))
+    
+  TERM: FACTOR         (FACTOR)
+      | TERM TIMES FACTOR  (ExpOp.multiply(TERM,FACTOR))
+      | TERM DIV FACTOR   (valOf(ExpOp.divide(TERM, FACTOR)))
+      
+  FACTOR: NUM           (NUM)
+        | LPAREN EXP RPAREN (EXP)
+        | ID ((finserval((trimsp(ID)), !ListofBindings)))
+   (* EXP1 : TERM1             (TERM1)
+      | EXP1 PLUS TERM1    (ExpOp.add(EXP1,TERM1))
+      | EXP1 SUB TERM1     (ExpOp.subtract(EXP1,TERM1))
+    
+  TERM1: FACTOR1         (FACTOR1)
+      | TERM1 TIMES FACTOR1  (ExpOp.multiply(TERM1,FACTOR1))
+      | TERM1 DIV FACTOR1   (valOf(ExpOp.divide(TERM1, FACTOR1)))
+      
+  FACTOR1: NUM           (NUM)
+        | LPAREN EXP1 RPAREN (EXP1) *)

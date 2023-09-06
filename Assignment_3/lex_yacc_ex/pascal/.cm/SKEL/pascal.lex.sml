@@ -1,0 +1,2 @@
+Skeleton 5
+ae"PascalLexFun"i2aä¢Tokens"gp1c"Pascal_TOKENS"f3d"Char"ä¢TextIO"ä¢Vector"h3aä¢yyInput"jh3aä¢TIO"gp1ÿ8ad"TSIO"gp2ÿd"StreamIO"ad"TPIO"gp1d"TextPrimIO"è0aä¢UserDeclarations"h5Caÿçğ±ÿeÿ‚3f2ä¢List"d"Array"aä¢KeyWord"jÿ‚ÿ‚egp1ÿƒNbbd2egp1ÿ‚f6d"IO"Cÿ‚>d"String"ÿ‚ÿÿNf0f1ÿ

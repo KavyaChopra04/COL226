@@ -23,6 +23,7 @@ and EXP =   INVERSE of EXP |
             RATDIV of EXP*EXP |
             NEG of EXP |
             PLUS of EXP*EXP |
+            UNPLUS of EXP|
             SUB of EXP*EXP |
             TIMES of EXP*EXP |
             DIV of EXP*EXP |

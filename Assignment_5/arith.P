@@ -1,0 +1,32 @@
+len([], 0).
+len([_|T], N) :- len(T, N1), N is N1+1.
+
+interchange(_, _, [], []).
+interchange(X, Y, [X|Xs], [Y|Ys]) :- interchange(X, Y, Xs, Ys).
+interchange(X, Y, [Y|Xs], [X|Ys]) :- interchange(X, Y, Xs, Ys).
+interchange(X, Y, [H|Xs], [H|Ys]) :- H \= X, H \= Y, interchange(X, Y, Xs, Ys).
+removeRedundancy(['-', '~'|T1], ['+'|T2]) :- removeRedundancy(T1, T2).
+removeRedundancy(['+', '~'|T1], ['-'|T2]) :- removeRedundancy(T1, T2).
+removeRedundancy(['=', '~'|T1], ['=', '-'|T2]) :- removeRedundancy(T1, T2).
+removeRedundancy([X|T1], [X|T2]) :- X\='+', X\='-', X\='=', removeRedundancy(T1, T2).
+removeRedundancy([X, Y|T1], [X,Y | T2]) :- (X == '+'; X == '-'; X == '='), Y\='~', removeRedundancy(T1, T2).
+removeRedundancy([], []).
+removeUnary(['~'|T1], ['-'|T2]) :- removeUnary(T1, T2).
+removeUnary([X|T1], [X|T2]) :- X\='~', removeUnary(T1, T2).
+removeUnary([], []).
+
+decompose(L, L1, L2) :- append(L1, L2, L), len(L1, N1), N1>0, len(L2, N2), N2>0.
+arith(L):- decompose(L, LeftList, RightList), expression(LeftList, LeftValue, LeftOpList), expression(RightList, RightValue, RightOpList), LeftValue =:= RightValue, 
+append(LeftOpList, ['='], ImList), append(ImList, RightOpList, FinalList), removeRedundancy(FinalList, FinalList1), removeUnary(FinalList1, FinalList2), writeChar(FinalList2).
+
+writeChar([]):- nl.
+writeChar([H|T]):- write(H), writeChar(T).
+
+expression(L, Value, Oplist):- len(L, NL), NL>1, decompose(L, LeftList, RightList), 
+                                expression(LeftList, LeftValue, LeftOpList), 
+                            
+                                expression(RightList, RightValue, RightOpList), 
+                                (Value is LeftValue+RightValue, append(LeftOpList, ['+'], ImList1), append(ImList1, RightOpList, Oplist); 
+                                Value is LeftValue-RightValue, append(LeftOpList, ['-'], ImList2), interchange('+', '-', RightOpList, OplistIm), append(ImList2, OplistIm, Oplist)).
+expression([X], X, Oplist):- append([], [X], Oplist).
+expression([X], -X, Oplist):-append(['~'], [X], Oplist).

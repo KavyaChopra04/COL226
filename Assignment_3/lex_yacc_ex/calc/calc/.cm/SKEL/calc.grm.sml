@@ -1,0 +1,2 @@
+Skeleton 5
+ae"CalcLrValsFun"i2aä¢Token"gp1c"TOKEN"f±ÿjh2aä¢ParserData"h7aä¢Header"è0aä¢LrTable"gp2ÿÿCaÿgpÿ(båçğ±ÿf6d"Char"Cd"List"d"String"d"General"ÿd"Array"Nbåçğ±ÿ?aä¢MlyValue"ÿad"EC"h2ÿ&bÿ‚æ±ÿ‚%ad"Actions"h2bÿ‚f3d"Int"ÿÿ‚%ÿƒNaä¢Tokens"jÿçğ±ã¢Calc_TOKENS"h2aÿ/gp1c"PARSER_DATA"aÿƒ+ÿƒ8
